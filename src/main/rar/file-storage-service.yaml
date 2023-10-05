@@ -1,0 +1,93 @@
+openapi: 3.0.3
+info:
+  title: File Storage Service API
+  description: File Storage Service API
+  version: 1.0.0
+servers:
+  - url: 'https'
+tags:
+  - name: file
+    description: Manage files
+paths:
+  /file:
+    post:
+      tags:
+        - file
+      summary: Upload file
+      operationId: uploadFile
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                category:
+                  $ref: "#/components/schemas/CategoryEnum"
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileUploadResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+components:
+  schemas:
+    CategoryEnum:
+      type: string
+      enum:
+        - ID_CARD_FRONT
+        - ID_CARD_BACK
+        - FACE
+        - CONTRACT_DOCUMENT
+        - CONTENT
+        - OTHER
+
+    FileUploadResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: File ID
+        url:
+          type: string
+          description: File URL
+
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorField'
+
+    ErrorField:
+      type: object
+      properties:
+        message:
+          type: string
+        code:
+          type: string
+        target:
+          type: string

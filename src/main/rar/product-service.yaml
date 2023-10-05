@@ -1,0 +1,428 @@
+openapi: 3.0.0
+servers:
+  - url: 'https://hdsaison.swagger.io/v1'
+info:
+  description: The api contract for product service.
+  version: 1.0.0
+  title: Swagger HDSaison
+  termsOfService: 'http://swagger.io/terms/'
+  contact:
+    email: nhan.nguyen@futurify.vn
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+tags:
+  - name: product
+    description: product
+  - name: document
+    description: get document of product
+  - name: additionalInfo
+    description: get additional info of product
+paths:
+  /product/type:
+    post:
+      operationId: createProductType
+      summary: Create product type
+      tags:
+        - product type
+      requestBody:
+        $ref: '#/components/requestBodies/CreateProductTypeRequest'
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request when missing necessary parameters, or invalid verification method
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+    get:
+      operationId: getProductTypes
+      summary: Get product types
+      tags:
+        - product type
+      parameters:
+        - name: name
+          in: query
+          description: name
+          schema:
+            type: string
+        - name: page
+          in: query
+          description: page
+          schema:
+            type: integer
+        - name: size
+          in: query
+          description: size
+          schema:
+            type: integer
+        - name: sort
+          in: query
+          description: sort
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductTypesResponse'
+        '500':
+          description: Internal Server Error
+  /product/type/{productTypeId}:
+    put:
+      operationId: updateProductType
+      summary: Update product type
+      tags:
+        - product type
+      parameters:
+        - name: productTypeId
+          in: path
+          description: Id of product type
+          required: true
+          schema:
+            type: string
+      requestBody:
+        $ref: '#/components/requestBodies/UpdateProductTypeRequest'
+      responses:
+        '200':
+          description: OK
+        '500':
+          description: Internal Server Error
+  /product/{productId}:
+    get:
+      operationId: getProductByProductId
+      summary: Get product by product id to create contract
+      tags:
+        - product
+      parameters:
+        - $ref: '#/components/parameters/productId'
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: success response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '404':
+          description: Product not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Product not found."
+  /product/{productId}/document:
+    get:
+      operationId: getDocumentOfProduct
+      summary: Get document of product
+      tags:
+        - product
+        - document
+      parameters:
+        - $ref: '#/components/parameters/productId'
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: success response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Document'
+        '404':
+          description: Product not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Product not found."
+components:
+  parameters:
+    productId:
+      required: true
+      name: productId
+      in: path
+      description: product id
+      schema:
+        type: integer
+        format: int64
+  schemas:
+    ProductTypeStatus:
+      type: string
+      enum:
+        - ACTIVE
+        - INACTIVE
+    Product:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        description:
+          type: string
+        cardAttribute:
+          $ref: '#/components/schemas/CardAttribute'
+        cashAttribute:
+          $ref: '#/components/schemas/CashAttribute'
+        installmentLoan:
+          $ref: '#/components/schemas/InstallmentLoanAttribute'
+        additionalInfo:
+          $ref: '#/components/schemas/AdditionalInfo'
+    CardAttribute:
+      type: object
+      properties:
+        cardName:
+          type: string
+        limitAmount:
+          type: integer
+          format: int64
+        cardType:
+          type: string
+    CashAttribute:
+      type: object
+      properties:
+        maxAmount:
+          type: integer
+          format: int64
+        minAmount:
+          type: integer
+          format: int64
+        interestRate:
+          type: number
+          format: float
+    InstallmentLoanAttribute:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        description:
+          type: string
+        #confirm more properties
+    Document:
+      type: object
+      properties:
+        productDocumentId:
+          type: integer
+          format: int32
+        documentId:
+          type: integer
+          format: int32
+        required:
+          type: boolean
+        name:
+          type: string
+        type:
+          enum:
+            - IMAGE
+            - TEXT
+    AdditionalInfo:
+      type: object
+      properties:
+        productAdditionalInfoId:
+          type: integer
+          format: int32
+        key:
+          type: string
+          example: 'fullName'
+          description: 'id of additional_attribute'
+        dataType:
+          type: string
+          example: 'String'
+        required:
+          type: boolean
+          example: true
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        target:
+          type: string
+        details:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorField'
+    ErrorField:
+      type: object
+      properties:
+        message:
+          type: string
+        code:
+          type: string
+        target:
+          type: string
+
+    ProductTypeResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        category:
+          type: object
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+            description:
+              type: string
+            createdDate:
+              type: string
+              format: date-time
+            updatedDate:
+              type: string
+              format: date-time
+            code:
+              type: string
+            createdBy:
+              type: string
+            updatedBy:
+              type: string
+        name:
+          type: string
+        iconUrl:
+          type: string
+        description:
+          type: string
+        status:
+          $ref: '#/components/schemas/ProductTypeStatus'
+        priority:
+          type: integer
+        code:
+          type: string
+        createdDate:
+          type: string
+          format: date-time
+        updatedDate:
+          type: string
+          format: date-time
+        createdBy:
+          type: string
+        updatedBy:
+          type: string
+    ProductTypesResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductTypeResponse'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+        totalElements:
+          type: integer
+          format: int64
+          example: 100
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+          example: 1
+          description: page
+        size:
+          type: integer
+          example: 10
+          description: total elements per page
+        orderBy:
+          type: string
+          example: "name:ASC,age:DESC"
+          description: Order by fields
+  requestBodies:
+    CreateProductTypeRequest:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              categoryId:
+                type: string
+              name:
+                type: string
+              iconUrl:
+                type: string
+              description:
+                type: string
+              status:
+                $ref: '#/components/schemas/ProductTypeStatus'
+              priority:
+                type: integer
+              code:
+                type: string
+              createdDate:
+                type: string
+                format: date-time
+              updatedDate:
+                type: string
+                format: date-time
+              createBy:
+                type: string
+              updateBy:
+                type: string
+    UpdateProductTypeRequest:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              categoryId:
+                type: string
+              name:
+                type: string
+              iconUrl:
+                type: string
+              description:
+                type: string
+              status:
+                $ref: '#/components/schemas/ProductTypeStatus'
+              priority:
+                type: integer
+              code:
+                type: string
+              createdDate:
+                type: string
+                format: date-time
+              updatedDate:
+                type: string
+                format: date-time
+              createBy:
+                type: string
+              updateBy:
+                type: string
+    Documents:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            properties:
+              documents:
+                type: array
+                items:
+                  type: string
+                  format: binary
+            required:
+              - documents
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security: [ ]
